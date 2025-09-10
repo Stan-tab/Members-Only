@@ -8,8 +8,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/public"));
 
 app.use("/", indexRouter);
+app.use((err, req, res, next) => {
+	res.send("OOPs we habe an error there go to the main page PLEASE");
+	console.error(err);
+});
 
 const port = process.env.PORT;
-app.listen(port || 3000, () => {
+app.listen(port || 4000, () => {
 	console.log(`Listen on localhost:${port}`);
 });
