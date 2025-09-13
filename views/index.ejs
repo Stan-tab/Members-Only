@@ -6,8 +6,13 @@
     <link rel="stylesheet" href="index.css">
     <title>Messages</title>
 </head>
+<% const vis = Object.keys(msg[0]).length > 2 ? "none" : "" %>
 <body>
-    <h1>Message</h1>
-    <%- include("./components/msg.ejs") %>
+    <h1>Hello <%= locals.user.username %>
+    </h1>
+    <p><a href="/log-out">Log out</a> || <a href="/new">Create message</a> || <a href="/membership" style="display: <%= vis %>;">Get a membership</a></p>
+    <main>
+        <%- include("./components/msg.ejs", {msg}) %>
+    </main>
 </body>
 </html>

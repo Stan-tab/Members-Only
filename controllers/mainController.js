@@ -14,7 +14,6 @@ const localStrategy = new LocalStrategy(async (username, password, done) => {
 		done(e);
 	}
 });
-
 async function serialize(user, done) {
 	done(null, user.id);
 }
@@ -27,12 +26,20 @@ async function deserialize(id, done) {
 	}
 }
 
-function indexGet(req, res) {
+async function indexGet(req, res) {
 	if (!req.user) return res.redirect("/log-in");
-	res.render("index");
+	const { is_member } = await db.getUser(req.user.id);
+	let data = await db.getMessages();
+	if (!is_member)
+		data.map((e) => {
+			delete e.date;
+			delete e.username;
+			return e;
+		});
+	res.render("index", { user: req.user, msg: data });
 }
 
-function logInGet(req, res) {	
+function logInGet(req, res) {
 	res.render("logIn");
 }
 
@@ -45,11 +52,46 @@ async function signInPost(req, res, next) {
 	} catch (e) {
 		return next(e);
 	}
-
 	req.logIn(newUser, (e) => {
 		if (e) throw new Error("login problem: ", e);
 		return res.redirect("/");
 	});
+}
+
+function signInGet(req, res) {
+	res.render("logIn", { action: "Sign-in" });
+}
+
+function logOut(req, res) {
+	req.logOut((e) => {
+		if (e) console.error(e);
+		return res.redirect("/");
+	});
+}
+
+function createMsgGet(req, res) {
+	res.render("new");
+}
+
+async function createMsgPost(req, res) {
+	const { msg } = req.body;
+	await db.createMessage(req.user.id, msg);
+	res.redirect("/");
+}
+
+function membershipGet(req, res) {
+	res.render("member");
+}
+
+async function membershipPost(req, res) {
+	const { code } = req.body;
+	const isMatch = await bcrypt.compare(code, process.env.SECRET);
+	if (isMatch) {
+		await db.giveMembership(req.user.id);
+		res.redirect("/");
+		return;
+	}
+	res.redirect("/membership");
 }
 
 module.exports = {
@@ -59,4 +101,10 @@ module.exports = {
 	deserialize,
 	signInPost,
 	logInGet,
+	signInGet,
+	logOut,
+	createMsgGet,
+	createMsgPost,
+	membershipGet,
+	membershipPost,
 };

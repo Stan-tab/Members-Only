@@ -6,21 +6,32 @@ const cl = new Client({
 });
 
 const sql = `
+CREATE TABLE "session" (
+  "sid" varchar NOT NULL COLLATE "default",
+  "sess" json NOT NULL,
+  "expire" timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
+
+ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+CREATE INDEX "IDX_session_expire" ON "session" ("expire");
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     username VARCHAR(255) UNIQUE NOT NULL,
+    is_member BOOLEAN NOT NULL DEFAULT FALSE,
     password VARCHAR(255) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    message TEXT
+    message TEXT,
+    date TIMESTAMPTZ DEFAULT Now()
 );
 CREATE TABLE IF NOT EXISTS users_to_messages (
     userid INTEGER REFERENCES users(id) NOT NULL,
     messageid INTEGER REFERENCES messages(id) NOT NULL
 );
-
-INSERT INTO users (username, password) VALUES ( 'anon', 'anon' );
 `;
 
 async function main() {

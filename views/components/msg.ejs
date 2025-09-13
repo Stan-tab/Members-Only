@@ -1,0 +1,15 @@
+<% msg.forEach(e=> { %>
+    <% 
+    let date = "";
+    if (e.date) {
+        const rowDate = new Date(e.date);
+        date = `${rowDate.getDate()}:${rowDate.getMonth() + 1}:${rowDate.getFullYear()}`;
+    }
+     %>
+    <div class="msg">
+        <p><%= e.message || "" %></p>
+        <p><%= e.is_member %></p>
+        <p><%= date %></p>
+        <p><%= e.username || "" %></p>
+    </div>
+<% }) %>
